@@ -12,7 +12,7 @@ const router = useRouter();
   useEffect(() => {
     const timer = setTimeout(() => {
       router.replace("/Onboarding");
-    }, 2000);
+    }, 1500);
     return () => clearTimeout(timer); 
   }, []);
   if (!fontsLoaded) {
@@ -22,10 +22,10 @@ const router = useRouter();
   return (
     <LinearGradient
   colors={[
-    'rgba(172, 255, 47, 0.76)', 
+    'rgba(42, 70, 1, 1)', 
     '#000000',                 
     '#000000',                
-    'rgba(172, 255, 47, 0.76)'  
+    'rgba(42, 70, 1, 1)'  
   ]}
   locations={[0, 0.2, 0.8, 1]}
   style={styles.container}
