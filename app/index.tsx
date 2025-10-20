@@ -11,7 +11,7 @@ export default function LandingPage() {
 const router = useRouter();
   useEffect(() => {
     const timer = setTimeout(() => {
-      router.replace("/Onboarding");
+      router.replace("/onboarding");
     }, 1500);
     return () => clearTimeout(timer); 
   }, []);

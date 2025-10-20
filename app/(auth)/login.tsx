@@ -4,9 +4,6 @@ import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { useAuth } from "@/hooks/useAuth";
 import {
-  Image,
-  Alert,
-  Modal,
   StyleSheet,
   Text,
   TextInput,
@@ -14,7 +11,9 @@ import {
   View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import GoogleLogo from '../../assets/images/logo_google_g_icon.png';
+import PrimaryButton from '@/app/components/ui/PrimaryButton';
+import ModalDialog from '@/app/components/ui/ModalDialog';
+import SocialButton from '@/app/components/ui/SocialButton';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -23,6 +22,8 @@ export default function LoginScreen() {
   const router = useRouter();
   const {login} = useAuth();
 const [isModalVisible, setIsModalVisible] = useState(false);
+const [modalTitle, setModalTitle] = useState('');
+const [modalMessage, setModalMessage] = useState('');
 const [isLoading, setIsLoading] = useState(false);
 
   const handleLogin = async () => {
@@ -34,15 +35,15 @@ const [isLoading, setIsLoading] = useState(false);
     const { ok, data, error } = await login({ email, password });
     setIsLoading(false);
     if (ok) {
-      setIsModalVisible(true);
+      router.push('/home');
     } else {
-      const message = (data && (data as any).message) || error || (data && (data as any).error) || 'Terjadi kesalahan.';
-      Alert.alert("Gagal", String(message));
+      setModalTitle('Login Gagal');
+      setModalMessage('Alamat email atau password tidak ditemukan');
+      setIsModalVisible(true);
     }
   };
   const handleCloseModal = () => {
     setIsModalVisible(false);
-    router.push('/home');
   }
 
 
@@ -54,7 +55,7 @@ const [isLoading, setIsLoading] = useState(false);
     >
       <SafeAreaView style={styles.container}>
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.replace('/Onboarding')} style={styles.backButton}>
+          <TouchableOpacity onPress={() => router.replace('/onboarding')} style={styles.backButton}>
             <MaterialIcons name="arrow-back" size={24} color="white" />
           </TouchableOpacity>
         </View>
@@ -105,9 +106,7 @@ const [isLoading, setIsLoading] = useState(false);
             <Text style={styles.forgotPasswordText}>Lupa Password?</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.button} onPress={handleLogin}>
-            <Text style={styles.buttonText}>{isLoading ? 'Loading...' : 'Sign In'}</Text>
-          </TouchableOpacity>
+          <PrimaryButton title="Sign In" onPress={handleLogin} loading={isLoading} />
 
           <View style={styles.dividerContainer}>
             <View style={styles.dividerLine} />
@@ -116,12 +115,7 @@ const [isLoading, setIsLoading] = useState(false);
           </View>
 
           {/* --- Tombol Google --- */}
-          <TouchableOpacity style={styles.googleButton}>
-            <Image
-              source={GoogleLogo} 
-              style={styles.googleIcon}
-            />
-          </TouchableOpacity>
+          <SocialButton provider="google" onPress={() => { /* TODO: implement Google Sign-in */ }} style={styles.googleButton} />
 
           {/* --- Footer Daftar --- */}
           <View style={styles.footer}>
@@ -132,24 +126,16 @@ const [isLoading, setIsLoading] = useState(false);
           </View>
           
         </View>
-        <Modal
-                animationType="fade"
-                transparent={true}
-                visible={isModalVisible}
-                onRequestClose={handleCloseModal}
-              >
-                <View style={styles.modalBackdrop}>
-                  <View style={styles.modalContent}>
-                    <Text style={styles.modalTitle}>Login Berhasil</Text>
-                    <Text style={styles.modalMessage}>
-                      Siap-siap! Olahraga seru menantimu di FunFit.
-                    </Text>
-                    <TouchableOpacity style={styles.modalButton} onPress={handleCloseModal}>
-                      <Text style={styles.buttonText}>OK</Text>
-                    </TouchableOpacity>
-                  </View>
-                  </View>
-              </Modal>
+        <ModalDialog
+          visible={isModalVisible}
+          title={modalTitle}
+          message={modalMessage}
+          buttonText="OK"
+          onRequestClose={handleCloseModal}
+          onConfirm={handleCloseModal}
+          showCancel={false}
+          variant="error"
+        />
       </SafeAreaView>
     </LinearGradient>
   );

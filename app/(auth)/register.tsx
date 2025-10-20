@@ -1,4 +1,4 @@
-import { Feather, MaterialIcons } from '@expo/vector-icons';
+import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
@@ -8,22 +8,24 @@ import {
     Modal,
     StyleSheet,
     Text,
-    TextInput,
     TouchableOpacity,
     View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import InputField from '@/app/components/ui/InputField';
+import PasswordField from '@/app/components/ui/PasswordField';
+import PrimaryButton from '@/app/components/ui/PrimaryButton';
+import ModalDialog from '@/app/components/ui/ModalDialog';
 
 export default function RegisterScreen() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
-  const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] = useState(false);
   const router = useRouter();
   const { register } = useAuth();
 const [isModalVisible, setIsModalVisible] = useState(false);
+const [isLoading, setIsLoading] = useState(false);
 
   const handleRegister = async  () => {
     if (!name || !email || !password || !confirmPassword) {
@@ -35,19 +37,26 @@ const [isModalVisible, setIsModalVisible] = useState(false);
       return;
     }
 
-    const { ok, data } = await register({ name, email, password });
+    setIsLoading(true);
+    const { ok, data, error } = await register({ name, email, password });
+    setIsLoading(false);
 
     if (ok) {
       setIsModalVisible(true);
     } else {
-      Alert.alert("Gagal", data?.message || "Terjadi kesalahan.");
+      const message = (data && (data as any).message) || error || 'Terjadi kesalahan.';
+      Alert.alert('Gagal', String(message));
     }
   
 };
-const handleCloseModal = () => {
+  const handleCloseModal = () => {
     setIsModalVisible(false);
-router.push('/login');
-}
+    router.push('/login');
+  }
+
+  const handleCancelModal = () => {
+    setIsModalVisible(false);
+  }
 
   return (
     <LinearGradient
@@ -69,76 +78,35 @@ router.push('/login');
             Latihan lebih mudah, terukur, dan konsisten semuanya dimulai dari sini.
           </Text>
 
-          <View style={styles.inputContainer}>
-            <MaterialIcons name="person" size={20} color="#888" style={styles.inputIcon} />
-            <TextInput
-              style={styles.input}
-              placeholder="Nama Lengkap"
-              placeholderTextColor="#888"
-              value={name}
-              onChangeText={setName}
-            />
-          </View>
+          <InputField
+            value={name}
+            onChangeText={setName}
+            placeholder="Nama Lengkap"
+            iconName="person"
+          />
 
+          <InputField
+            value={email}
+            onChangeText={setEmail}
+            placeholder="Alamat Email"
+            iconName="email"
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
 
-          <View style={styles.inputContainer}>
-            <MaterialIcons name="email" size={20} color="#888" style={styles.inputIcon} />
-            <TextInput
-              style={styles.input}
-              placeholder="Alamat Email"
-              placeholderTextColor="#888"
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-            />
-          </View>
+          <PasswordField
+            value={password}
+            onChangeText={setPassword}
+            placeholder="Kata Sandi"
+          />
 
+          <PasswordField
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+            placeholder="Ulangi Kata Sandi"
+          />
 
-          <View style={styles.inputContainer}>
-            <MaterialIcons name="lock" size={20} color="#888" style={styles.inputIcon} />
-            <TextInput
-              style={styles.input}
-              placeholder="Kata Sandi"
-              placeholderTextColor="#888"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry={!isPasswordVisible}
-            />
-            <TouchableOpacity onPress={() => setIsPasswordVisible(!isPasswordVisible)}>
-              <Feather
-                name={isPasswordVisible ? 'eye-off' : 'eye'}
-                size={20}
-                color="#888"
-                style={styles.eyeIcon}
-              />
-            </TouchableOpacity>
-          </View>
-
-
-          <View style={styles.inputContainer}>
-            <MaterialIcons name="lock" size={20} color="#888" style={styles.inputIcon} />
-            <TextInput
-              style={styles.input}
-              placeholder="Ulangi Kata Sandi"
-              placeholderTextColor="#888"
-              value={confirmPassword}
-              onChangeText={setConfirmPassword}
-              secureTextEntry={!isConfirmPasswordVisible}
-            />
-            <TouchableOpacity onPress={() => setIsConfirmPasswordVisible(!isConfirmPasswordVisible)}>
-              <Feather
-                name={isConfirmPasswordVisible ? 'eye-off' : 'eye'}
-                size={20}
-                color="#888"
-                style={styles.eyeIcon}
-              />
-            </TouchableOpacity>
-          </View>
-
-          <TouchableOpacity style={styles.button} onPress={handleRegister}>
-            <Text style={styles.buttonText}>Sign Up</Text>
-          </TouchableOpacity>
+          <PrimaryButton title="Sign Up" onPress={handleRegister} loading={isLoading} />
 
 
           <View style={styles.dividerContainer}>
@@ -155,24 +123,14 @@ router.push('/login');
             </TouchableOpacity>
           </View>
         </View>
-        <Modal
-        animationType="fade"
-        transparent={true}
-        visible={isModalVisible}
-        onRequestClose={handleCloseModal}
-      >
-        <View style={styles.modalBackdrop}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Registrasi Berhasil</Text>
-            <Text style={styles.modalMessage}>
-              Selamat! Akun Anda telah berhasil dibuat. Silakan masuk untuk melanjutkan.
-            </Text>
-            <TouchableOpacity style={styles.modalButton} onPress={handleCloseModal}>
-              <Text style={styles.buttonText}>OK</Text>
-            </TouchableOpacity>
-          </View>
-          </View>
-      </Modal>
+        <ModalDialog
+          visible={isModalVisible}
+          title="Registrasi Berhasil"
+          message="Selamat! Akun Anda telah berhasil dibuat. Silakan masuk untuk melanjutkan."
+          buttonText="OK"
+          onRequestClose={handleCloseModal}
+          onConfirm={handleCloseModal}
+        />
       </SafeAreaView>
     </LinearGradient>
   );
