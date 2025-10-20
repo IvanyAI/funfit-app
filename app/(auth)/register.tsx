@@ -2,6 +2,7 @@ import { Feather, MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
+import { useAuth } from "@/hooks/useAuth";
 import {
     Alert,
     Modal,
@@ -14,18 +15,18 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function RegisterScreen() {
-  const [fullName, setFullName] = useState('');
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] = useState(false);
   const router = useRouter();
-
+  const { register } = useAuth();
 const [isModalVisible, setIsModalVisible] = useState(false);
 
-  const handleRegister = () => {
-    if (!fullName || !email || !password || !confirmPassword) {
+  const handleRegister = async  () => {
+    if (!name || !email || !password || !confirmPassword) {
       Alert.alert('Error', 'Semua kolom harus diisi.');
       return;
     }
@@ -34,8 +35,14 @@ const [isModalVisible, setIsModalVisible] = useState(false);
       return;
     }
 
-    console.log('Mendaftarkan pengguna...');
-    setIsModalVisible(true);
+    const { ok, data } = await register({ name, email, password });
+
+    if (ok) {
+      setIsModalVisible(true);
+    } else {
+      Alert.alert("Gagal", data?.message || "Terjadi kesalahan.");
+    }
+  
 };
 const handleCloseModal = () => {
     setIsModalVisible(false);
@@ -68,8 +75,8 @@ router.push('/login');
               style={styles.input}
               placeholder="Nama Lengkap"
               placeholderTextColor="#888"
-              value={fullName}
-              onChangeText={setFullName}
+              value={name}
+              onChangeText={setName}
             />
           </View>
 

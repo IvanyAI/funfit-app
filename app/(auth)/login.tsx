@@ -2,8 +2,10 @@ import { Feather, MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
+import { useAuth } from "@/hooks/useAuth";
 import {
   Image,
+  Alert,
   Modal,
   StyleSheet,
   Text,
@@ -19,16 +21,24 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const router = useRouter();
+  const {login} = useAuth();
 const [isModalVisible, setIsModalVisible] = useState(false);
+const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if(!email || !password) {
       alert('Please fill in all fields.');
       return;
     }
-    // Logika login Anda tetap di sini
-    console.log('Logging in...');
-    setIsModalVisible(true);
+    setIsLoading(true);
+    const { ok, data, error } = await login({ email, password });
+    setIsLoading(false);
+    if (ok) {
+      setIsModalVisible(true);
+    } else {
+      const message = (data && (data as any).message) || error || (data && (data as any).error) || 'Terjadi kesalahan.';
+      Alert.alert("Gagal", String(message));
+    }
   };
   const handleCloseModal = () => {
     setIsModalVisible(false);
@@ -96,7 +106,7 @@ const [isModalVisible, setIsModalVisible] = useState(false);
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.button} onPress={handleLogin}>
-            <Text style={styles.buttonText}>Sign In</Text>
+            <Text style={styles.buttonText}>{isLoading ? 'Loading...' : 'Sign In'}</Text>
           </TouchableOpacity>
 
           <View style={styles.dividerContainer}>
