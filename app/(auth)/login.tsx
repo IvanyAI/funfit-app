@@ -1,12 +1,13 @@
-import { Feather, MaterialIcons } from '@expo/vector-icons';
+import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import InputField from '@/app/components/ui/InputField';
+import PasswordField from '@/app/components/ui/PasswordField';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { useAuth } from "@/hooks/useAuth";
 import {
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View
 } from 'react-native';
@@ -18,21 +19,33 @@ import SocialButton from '@/app/components/ui/SocialButton';
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const [errors, setErrors] = useState<{ [key: string]: string | null }>({});
   const router = useRouter();
   const {login} = useAuth();
-const [isModalVisible, setIsModalVisible] = useState(false);
-const [modalTitle, setModalTitle] = useState('');
-const [modalMessage, setModalMessage] = useState('');
-const [isLoading, setIsLoading] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [modalTitle, setModalTitle] = useState('');
+  const [modalMessage, setModalMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleLogin = async () => {
-    if(!email || !password) {
-      alert('Please fill in all fields.');
-      return;
+    // validate fields first
+    const newErrors: { [key: string]: string } = {};
+    if (!email.trim()) newErrors.email = 'Email harus diisi.';
+    else {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) newErrors.email = 'Format email tidak valid.';
     }
+    if (!password) newErrors.password = 'Kata sandi harus diisi.';
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return; // stop here — show inline errors instead of calling API
+    }
+
+    // clear previous errors and proceed to call login
+    setErrors({});
     setIsLoading(true);
-    const { ok, data, error } = await login({ email, password });
+    const { ok } = await login({ email, password });
     setIsLoading(false);
     if (ok) {
       router.push('/home');
@@ -67,40 +80,22 @@ const [isLoading, setIsLoading] = useState(false);
             Senang melihatmu kembali. Waktunya jaga keseimbangan lagi.
           </Text>
 
-          {/* --- Input Email dengan Ikon --- */}
-          <View style={styles.inputContainer}>
-            <MaterialIcons name="email" size={20} color="#888" style={styles.inputIcon} />
-            <TextInput
-              style={styles.input}
-              placeholder="Alamat Email"
-              placeholderTextColor="#888"
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-            />
-          </View>
+            <InputField
+                        value={email}
+                        onChangeText={(t) => { setEmail(t); setErrors(prev => ({ ...prev, email: null })); }}
+                        placeholder="Alamat Email"
+                        iconName="email"
+                        keyboardType="email-address"
+                        autoCapitalize="none"
+                        error={errors.email}
+                      />
 
-          {/* --- Input Password dengan Ikon --- */}
-          <View style={styles.inputContainer}>
-            <MaterialIcons name="lock" size={20} color="#888" style={styles.inputIcon} />
-            <TextInput
-              style={styles.input}
-              placeholder="Kata Sandi"
-              placeholderTextColor="#888"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry={!isPasswordVisible}
-            />
-            <TouchableOpacity onPress={() => setIsPasswordVisible(!isPasswordVisible)}>
-              <Feather
-                name={isPasswordVisible ? 'eye-off' : 'eye'}
-                size={20}
-                color="#888"
-                style={styles.eyeIcon}
-              />
-            </TouchableOpacity>
-          </View>
+            <PasswordField
+                        value={password}
+                        onChangeText={(t) => { setPassword(t); setErrors(prev => ({ ...prev, password: null })); }}
+                        placeholder="Kata Sandi"
+                        error={errors.password}
+                      />
 
           <TouchableOpacity style={styles.forgotPassword}>
             <Text style={styles.forgotPasswordText}>Lupa Password?</Text>
@@ -114,10 +109,8 @@ const [isLoading, setIsLoading] = useState(false);
             <View style={styles.dividerLine} />
           </View>
 
-          {/* --- Tombol Google --- */}
           <SocialButton provider="google" onPress={() => { /* TODO: implement Google Sign-in */ }} style={styles.googleButton} />
 
-          {/* --- Footer Daftar --- */}
           <View style={styles.footer}>
             <Text style={styles.footerText}>Tidak punya akun? </Text>
             <TouchableOpacity onPress={() => router.push('/register')}>
@@ -302,6 +295,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
-    width: '100%', // Tombol memenuhi lebar modal
+    width: '100%', 
   },
 });

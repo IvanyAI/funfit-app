@@ -5,7 +5,6 @@ import React, { useState } from 'react';
 import { useAuth } from "@/hooks/useAuth";
 import {
     Alert,
-    Modal,
     StyleSheet,
     Text,
     TouchableOpacity,
@@ -22,18 +21,31 @@ export default function RegisterScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [errors, setErrors] = useState<{ [key: string]: string | null }>({});
   const router = useRouter();
   const { register } = useAuth();
 const [isModalVisible, setIsModalVisible] = useState(false);
 const [isLoading, setIsLoading] = useState(false);
 
   const handleRegister = async  () => {
-    if (!name || !email || !password || !confirmPassword) {
-      Alert.alert('Error', 'Semua kolom harus diisi.');
-      return;
+    // Clear previous errors
+    setErrors({});
+
+    // Client-side validation
+    const newErrors: { [key: string]: string } = {};
+    if (!name.trim()) newErrors.name = 'Nama lengkap harus diisi.';
+    if (!email.trim()) newErrors.email = 'Email harus diisi.';
+    else {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) newErrors.email = 'Format email tidak valid.';
     }
-    if (password !== confirmPassword) {
-      Alert.alert('Error', 'Kata sandi tidak cocok.');
+    if (!password) newErrors.password = 'Kata sandi harus diisi.';
+    else if (password.length < 8) newErrors.password = 'Kata sandi minimal 8 karakter.';
+    if (!confirmPassword) newErrors.confirmPassword = 'Konfirmasi kata sandi harus diisi.';
+    else if (password !== confirmPassword) newErrors.confirmPassword = 'Kata sandi tidak cocok.';
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       return;
     }
 
@@ -52,10 +64,6 @@ const [isLoading, setIsLoading] = useState(false);
   const handleCloseModal = () => {
     setIsModalVisible(false);
     router.push('/login');
-  }
-
-  const handleCancelModal = () => {
-    setIsModalVisible(false);
   }
 
   return (
@@ -80,30 +88,34 @@ const [isLoading, setIsLoading] = useState(false);
 
           <InputField
             value={name}
-            onChangeText={setName}
+            onChangeText={(t) => { setName(t); setErrors(prev => ({ ...prev, name: null })); }}
             placeholder="Nama Lengkap"
             iconName="person"
+            error={errors.name}
           />
 
           <InputField
             value={email}
-            onChangeText={setEmail}
+            onChangeText={(t) => { setEmail(t); setErrors(prev => ({ ...prev, email: null })); }}
             placeholder="Alamat Email"
             iconName="email"
             keyboardType="email-address"
             autoCapitalize="none"
+            error={errors.email}
           />
 
           <PasswordField
             value={password}
-            onChangeText={setPassword}
+            onChangeText={(t) => { setPassword(t); setErrors(prev => ({ ...prev, password: null })); }}
             placeholder="Kata Sandi"
+            error={errors.password}
           />
 
           <PasswordField
             value={confirmPassword}
-            onChangeText={setConfirmPassword}
+            onChangeText={(t) => { setConfirmPassword(t); setErrors(prev => ({ ...prev, confirmPassword: null })); }}
             placeholder="Ulangi Kata Sandi"
+            error={errors.confirmPassword}
           />
 
           <PrimaryButton title="Sign Up" onPress={handleRegister} loading={isLoading} />
