@@ -1,6 +1,5 @@
 import React from 'react';
 import {
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
@@ -9,24 +8,32 @@ import {
   Platform,
   StatusBar,
 } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
+import { useRouter, useSegments } from 'expo-router';
 
 // Komponen kecil untuk setiap item di Tab Bar
 type TabItemProps = {
   iconName: React.ComponentProps<typeof MaterialCommunityIcons>['name'];
   label: string;
   isFocused?: boolean;
+  onPress?: () => void;
 };
 
-const TabItem: React.FC<TabItemProps> = ({ iconName, label, isFocused = false }) => (
-  <TouchableOpacity style={styles.tabItem}>
+const TabItem: React.FC<TabItemProps> = ({ iconName, label, isFocused = false, onPress }) => (
+  <TouchableOpacity
+    style={styles.tabItem}
+    onPress={onPress}
+    accessibilityRole="button"
+    accessibilityLabel={label}
+    hitSlop={{ top: 8, left: 8, right: 8, bottom: 8 }}
+  >
     <MaterialCommunityIcons
       name={iconName}
       size={24}
       color={isFocused ? '#B3FF00' : 'grey'}
     />
-    <Text style={[styles.tabLabel, { color: isFocused ? '#B3FF00' : 'grey' }]}>
+    <Text style={[styles.tabLabel, { color: isFocused ? '#B3FF00' : 'grey' }]}> 
       {label}
     </Text>
   </TouchableOpacity>
@@ -34,6 +41,11 @@ const TabItem: React.FC<TabItemProps> = ({ iconName, label, isFocused = false })
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
+  const segments = useSegments();
+
+  // current top-level segment, e.g. 'home' from '/home/...'
+  const currentSegment = segments && segments.length > 0 ? segments[0] : '';
 
   // Calculate top padding: prefer safe-area inset on iOS, and StatusBar height on Android
   const topPadding = Platform.OS === 'android' ? (StatusBar.currentHeight ?? 0) : insets.top;
@@ -85,20 +97,7 @@ export default function HomeScreen() {
         <View style={[styles.card, styles.workoutCard]} />
       </ScrollView>
 
-      {/* --- Custom Tab Bar --- */}
-      <View style={styles.tabBarContainer}>
-        <View style={styles.tabBar}>
-          <TabItem iconName="home-variant" label="Home" isFocused={true} />
-          <TabItem iconName="chart-line" label="Status" isFocused={false} />
-          {/* Placeholder untuk tombol tengah */}
-          <View style={{ width: 50 }} />
-          <TabItem iconName="clipboard-text-outline" label="Program" isFocused={false} />
-          <TabItem iconName="account-circle-outline" label="Akun" isFocused={false} />
-        </View>
-        <TouchableOpacity style={styles.centerButton}>
-          {/* Ikon bisa ditambahkan di sini jika perlu */}
-        </TouchableOpacity>
-      </View>
+      {/* Tab bar moved to persistent layout */}
     </SafeAreaView>
   );
 }
