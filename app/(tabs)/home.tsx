@@ -9,45 +9,11 @@ import {
   StatusBar,
 } from 'react-native';
 import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context';
-import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
-import { useRouter, useSegments } from 'expo-router';
+import { Feather } from '@expo/vector-icons';
 
-// Komponen kecil untuk setiap item di Tab Bar
-type TabItemProps = {
-  iconName: React.ComponentProps<typeof MaterialCommunityIcons>['name'];
-  label: string;
-  isFocused?: boolean;
-  onPress?: () => void;
-};
-
-const TabItem: React.FC<TabItemProps> = ({ iconName, label, isFocused = false, onPress }) => (
-  <TouchableOpacity
-    style={styles.tabItem}
-    onPress={onPress}
-    accessibilityRole="button"
-    accessibilityLabel={label}
-    hitSlop={{ top: 8, left: 8, right: 8, bottom: 8 }}
-  >
-    <MaterialCommunityIcons
-      name={iconName}
-      size={24}
-      color={isFocused ? '#B3FF00' : 'grey'}
-    />
-    <Text style={[styles.tabLabel, { color: isFocused ? '#B3FF00' : 'grey' }]}> 
-      {label}
-    </Text>
-  </TouchableOpacity>
-);
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
-  const router = useRouter();
-  const segments = useSegments();
-
-  // current top-level segment, e.g. 'home' from '/home/...'
-  const currentSegment = segments && segments.length > 0 ? segments[0] : '';
-
-  // Calculate top padding: prefer safe-area inset on iOS, and StatusBar height on Android
   const topPadding = Platform.OS === 'android' ? (StatusBar.currentHeight ?? 0) : insets.top;
 
   return (
