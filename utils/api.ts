@@ -1,4 +1,5 @@
-export const API_URL = "http://192.168.18.202:8001/api";
+export const API_URL = "http:/192.168.18.202:8001/api";
+import { router } from 'expo-router';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -13,10 +14,15 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
         'X-Requested-With': 'XMLHttpRequest',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
         ...options.headers,
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
     });
+    // if (res.status === 401) {
+    //   // token invalid atau expired
+    //   await AsyncStorage.removeItem('token');
+    //   router.replace('/login');
+    // }
 
     console.log("API Request:", { url, options });
     console.log("Response status:", res.status, "url:", res.url);

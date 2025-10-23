@@ -51,5 +51,18 @@ export function useAuth() {
     }
   };
 
-  return { register, login };
+  const logout = async () => {
+    try {
+      const response = await authService.logout();
+      console.log("Logout Response from Server:", { response });
+      await AsyncStorage.removeItem('token');
+       return { ok: response?.ok ?? response?.data?.success ?? false };
+    } catch (error) {
+      console.error("Logout Error:", error);
+      return { ok: false, error };
+    }
+  };
+
+
+  return { register, login, logout };
 }

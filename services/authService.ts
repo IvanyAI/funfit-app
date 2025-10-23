@@ -1,4 +1,5 @@
 import { apiFetch } from "@/utils/api";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface RegisterData {
   name?: string;
@@ -22,4 +23,13 @@ export const authService = {
     method: "POST",
     body: JSON.stringify(data),
   }),
+  logout: async () => {
+  const token = await AsyncStorage.getItem('token');
+  return apiFetch("/logout", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${token}`,
+    },
+  });
+}
 };

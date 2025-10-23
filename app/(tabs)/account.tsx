@@ -9,8 +9,10 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import PrimaryButton from '../components/ui/PrimaryButton';
+import { useAuth } from "@/hooks/useAuth";
 import { useState } from 'react';
 // Impor library ikon
+import { useRouter } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 
 /**
@@ -47,8 +49,17 @@ const SettingsItem: React.FC<SettingsItemProps> = ({
 
 const AccountScreen: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const handleLogout = (): void => {
+  const {logout} = useAuth();
+  const router = useRouter();
+  const handleLogout = async () => {
     setIsLoading(true);
+    const {ok} = await logout();
+    setIsLoading(false);
+    if (ok) {
+      router.replace('/login');
+    } else {
+      console.log('Logout failed');
+    }
     console.log('Logout pressed');
   };
 

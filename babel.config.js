@@ -3,7 +3,11 @@ module.exports = function (api) {
   return {
     presets: [
       ["babel-preset-expo", { jsxImportSource: "nativewind" }],
-      "nativewind/babel",
+    ],
+    plugins: [
+      "expo-router/babel",
+      // Reanimated HARUS selalu menjadi yang terakhir
+      "react-native-reanimated/plugin",
     ],
   };
 };
