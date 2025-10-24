@@ -11,9 +11,11 @@ import { Feather, Ionicons } from '@expo/vector-icons';
 // Impor komponen card yang baru dibuat
 import CalculatorCard from '../components/ui/CalculatorCard';
 import { useRouter } from 'expo-router';
+import { useHome } from '@/hooks/useHome';
 
 const ProgramScreen: React.FC = () => {
   const router = useRouter();
+  const { data } = useHome();
 
   // Handler untuk navigasi (bisa diganti dengan React Navigation)
   const handleCardPress = (path: string): void => {
@@ -34,7 +36,7 @@ const ProgramScreen: React.FC = () => {
           {/* Teks Welcome */}
           <View style={styles.headerTextContainer}>
             <Text style={styles.welcomeText}>Welcome My GymBro's</Text>
-            <Text style={styles.userNameText}>Adi Ivani Yusuf</Text>
+            <Text style={styles.userNameText}>{data?.user.name ?? '...'}</Text>
           </View>
           
           {/* Ikon Notifikasi */}
@@ -51,7 +53,7 @@ const ProgramScreen: React.FC = () => {
           <CalculatorCard
             iconName="activity" // Menggunakan ikon Feather yang ada
             title="BMI"
-            onPress={() => handleCardPress('/bmi')}
+            onPress={() => handleCardPress('/bmi/input')}
           />
           <CalculatorCard
             iconName="percent" // Menggunakan ikon Feather yang ada

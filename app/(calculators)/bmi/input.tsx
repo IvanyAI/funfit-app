@@ -8,6 +8,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   FlatList,
+  Alert,
 } from 'react-native';
 import { Link } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -15,14 +16,61 @@ import { Ionicons } from '@expo/vector-icons';
 import DropDownPicker from 'react-native-dropdown-picker';
 
 // Impor Komponen Kustom
-import HeightRuler from '../components/ui/HeightRuler';
-import WeightRuler from '../components/ui/WeightRuler';
+import HeightRuler from '../../components/ui/HeightRuler';
+import WeightRuler from '../../components/ui/WeightRuler';
+import ModalDialog from '../../components/ui/ModalDialog';
+
+interface BmiResult {
+  value: number;
+  category: string;
+  description: string;
+  color: string;
+}
+
+const BmiResultIndicator: React.FC<{ result: BmiResult }> = ({ result }) => {
+  const categories = [
+    { name: 'Underweight', color: '#3498db' },
+    { name: 'Normal', color: '#2ecc71' },
+    { name: 'Overweight', color: '#f1c40f' },
+    { name: 'Obesity', color: '#e74c3c' },
+  ];
+
+  // Calculate position of the indicator (0 to 100)
+  // Range BMI from 15 to 40 for visual representation
+  const minBmi = 15;
+  const maxBmi = 40;
+  const position = Math.max(0, Math.min(100, ((result.value - minBmi) / (maxBmi - minBmi)) * 100));
+
+  return (
+    <View style={styles.indicatorContainer}>
+      <View style={styles.indicatorBar}>
+        {categories.map((cat) => (
+          <View key={cat.name} style={{ flex: 1, backgroundColor: cat.color }} />
+        ))}
+      </View>
+      <View style={[styles.indicatorPointerContainer, { left: `${position}%` }]}>
+        <View style={styles.indicatorPointer} />
+      </View>
+      <View style={styles.indicatorLabels}>
+        {categories.map((cat) => (
+          <Text key={cat.name} style={styles.indicatorLabelText}>
+            {cat.name.substring(0, 1)}
+          </Text>
+        ))}
+      </View>
+    </View>
+  );
+};
+
 
 const CalculatorScreen: React.FC = () => {
   const [age, setAge] = useState<string>('');
   const [height, setHeight] = useState<number>(170); 
   const [weight, setWeight] = useState<number>(75); 
   const [isRulerScrolling, setIsRulerScrolling] = useState(false);
+
+  const [modalVisible, setModalVisible] = useState(false);
+  const [bmiResult, setBmiResult] = useState<BmiResult | null>(null);
 
   // --- STATE UNTUK DROPDOWN JENIS KELAMIN ---
   const [sexOpen, setSexOpen] = useState(false);
@@ -40,8 +88,41 @@ const CalculatorScreen: React.FC = () => {
     },
   ]);
 
+  const getBmiCategory = (bmi: number): BmiResult => {
+    if (bmi < 18.5) {
+      return { value: bmi, category: 'Underweight', description: 'Berat badan Anda lebih rendah dari normal. Anda bisa mencoba untuk makan sedikit lebih banyak.', color: '#3498db' };
+    }
+    if (bmi >= 18.5 && bmi < 25) {
+      return { value: bmi, category: 'Normal', description: 'Berat badan Anda normal. Pertahankan!', color: '#2ecc71' };
+    }
+    if (bmi >= 25 && bmi < 30) {
+      return { value: bmi, category: 'Overweight', description: 'Berat badan Anda lebih tinggi dari normal. Coba untuk lebih banyak berolahraga.', color: '#f1c40f' };
+    }
+    return { value: bmi, category: 'Obesity', description: 'Berat badan Anda jauh lebih tinggi dari normal. Disarankan untuk konsultasi dengan ahli gizi.', color: '#e74c3c' };
+  };
+
   const handleCalculate = (): void => {
-    console.log('Calculating...', { age, height, weight, sex: sexValue });
+    if (!age || !sexValue) {
+      Alert.alert('Data Tidak Lengkap', 'Mohon isi usia dan jenis kelamin Anda.');
+      return;
+    }
+
+    const heightInMeters = height / 100;
+    if (heightInMeters <= 0 || weight <= 0) {
+      Alert.alert('Data Tidak Valid', 'Tinggi dan berat badan harus lebih dari 0.');
+      return;
+    }
+
+    const bmiValue = weight / (heightInMeters * heightInMeters);
+    const result = getBmiCategory(bmiValue);
+
+    setBmiResult(result);
+    setModalVisible(true);
+  };
+
+  const handleCloseModal = () => {
+    setModalVisible(false);
+    setBmiResult(null);
   };
 
   return (
@@ -112,8 +193,8 @@ const CalculatorScreen: React.FC = () => {
                     <Text style={styles.unitText}>cm</Text>
                   </View>
                   <HeightRuler
-                    min={140}
-                    max={220}
+                    min={100}
+                    max={320}
                     unit="cm"
                     initialValue={height}
                     onValueChange={setHeight}
@@ -132,7 +213,7 @@ const CalculatorScreen: React.FC = () => {
                 </View>
                 <View style={{alignItems: 'center'}}>
                   <WeightRuler
-                    min={40}
+                    min={20}
                     max={150}
                     unit="kg"
                     initialValue={weight}
@@ -150,6 +231,26 @@ const CalculatorScreen: React.FC = () => {
             </View>
           }
         />
+        <ModalDialog
+          visible={modalVisible}
+          onRequestClose={handleCloseModal}
+          onConfirm={handleCloseModal}
+          buttonText="Tutup"
+        >
+          {bmiResult && (
+            <View style={styles.modalContentContainer}>
+              <Text style={styles.modalCategoryText}>Hasil Anda</Text>
+              <Text style={[styles.modalBmiValue, { color: bmiResult.color }]}>
+                {bmiResult.value.toFixed(1)}
+              </Text>
+              <Text style={[styles.modalCategoryText, { color: bmiResult.color }]}>
+                {bmiResult.category}
+              </Text>
+              <BmiResultIndicator result={bmiResult} />
+              <Text style={styles.modalDescription}>{bmiResult.description}</Text>
+            </View>
+          )}
+        </ModalDialog>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -260,6 +361,63 @@ const styles = StyleSheet.create({
     color: '#101010',
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  // --- Modal Styles ---
+  modalContentContainer: {
+    alignItems: 'center',
+    width: '100%',
+  },
+  modalBmiValue: {
+    fontSize: 56,
+    fontWeight: 'bold',
+    marginVertical: 8,
+  },
+  modalCategoryText: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: 'white',
+  },
+  modalDescription: {
+    fontSize: 14,
+    color: '#AAA',
+    textAlign: 'center',
+    marginTop: 20,
+    lineHeight: 20,
+  },
+  // --- Indicator Styles ---
+  indicatorContainer: {
+    width: '100%',
+    marginTop: 20,
+    height: 40,
+  },
+  indicatorBar: {
+    flexDirection: 'row',
+    height: 10,
+    borderRadius: 5,
+    overflow: 'hidden',
+  },
+  indicatorPointerContainer: {
+    position: 'absolute',
+    top: -5, // Position it above the bar
+    alignItems: 'center',
+    marginLeft: -5, // Center the pointer
+  },
+  indicatorPointer: {
+    width: 10,
+    height: 20,
+    backgroundColor: 'white',
+    borderRadius: 3,
+  },
+  indicatorLabels: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginTop: 8,
+  },
+  indicatorLabelText: {
+    color: '#888',
+    fontSize: 12,
+    width: '25%',
+    textAlign: 'center',
   },
 });
 

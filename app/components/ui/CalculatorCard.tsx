@@ -11,7 +11,7 @@ import { Feather } from '@expo/vector-icons';
 // Mendefinisikan tipe props untuk card
 interface CalculatorCardProps {
   title?: string; // Dibuat opsional untuk card kosong
-  iconName?: string; // Dibuat opsional
+  iconName?: React.ComponentProps<typeof Feather>['name']; // Dibuat opsional dan typesafe
   onPress?: (event: GestureResponderEvent) => void;
 }
 
@@ -33,7 +33,7 @@ const CalculatorCard: React.FC<CalculatorCardProps> = ({
       {!isEmpty && (
         <>
           <Feather
-            name={iconName || 'help-outline'} // Fallback icon
+            name={iconName || 'help-circle'} // Fallback icon, 'help-outline' tidak ada di Feather
             style={styles.cardIcon}
           />
           <Text style={styles.cardText}>{title}</Text>

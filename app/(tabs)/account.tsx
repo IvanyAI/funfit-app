@@ -14,6 +14,7 @@ import { useState } from 'react';
 // Impor library ikon
 import { useRouter } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
+import { useHome } from '@/hooks/useHome';
 
 /**
  * Mendefinisikan tipe data untuk props SettingsItem
@@ -62,7 +63,7 @@ const AccountScreen: React.FC = () => {
     }
     console.log('Logout pressed');
   };
-
+const { data } = useHome();
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView
@@ -75,7 +76,7 @@ const AccountScreen: React.FC = () => {
 
           <View style={styles.headerTextContainer}>
             <Text style={styles.welcomeText}>Welcome My GymBro's</Text>
-            <Text style={styles.userNameText}>Adi Ivani Yusuf</Text>
+            <Text style={styles.userNameText}>{data?.user.name ?? '...'}</Text>
           </View>
           
           {/* Ikon Notifikasi */}

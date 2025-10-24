@@ -1,10 +1,10 @@
 {
   "expo": {
     "name": "FunFit",
-    "slug": "FunFit",
+    "slug": "funfit",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/funfit.png",
     "scheme": "funfit",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -18,7 +18,7 @@
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "package": "com.itsvanneca.funfit",
+      "package": "com.funfit.app",
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false
     },

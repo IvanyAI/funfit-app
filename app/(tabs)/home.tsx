@@ -7,14 +7,19 @@ import {
   View,
   Platform,
   StatusBar,
+  ActivityIndicator,
 } from 'react-native';
 import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
+import { useHome } from '@/hooks/useHome';
 
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const topPadding = Platform.OS === 'android' ? (StatusBar.currentHeight ?? 0) : insets.top;
+  const { data, loading, error } = useHome();
+  if (loading) return <ActivityIndicator size="large" />;
+  if (error) return <Text>Error: {error}</Text>;
 
   return (
     <SafeAreaView style={[styles.container, { paddingTop: topPadding }]}> 
@@ -28,7 +33,7 @@ export default function HomeScreen() {
             <View style={styles.profilePic} />
             <View>
               <Text style={styles.welcomeText}>Welcome My GymBro's</Text>
-              <Text style={styles.userName}>Adi Ivani Yusuf</Text>
+              <Text style={styles.userName}>{data?.user.name ?? '...'}</Text>
             </View>
           </View>
           <TouchableOpacity>
